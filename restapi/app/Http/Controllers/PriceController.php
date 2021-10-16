@@ -7,12 +7,12 @@ use App\Models\Price;
 
 class PriceController extends Controller
 {
-    public function prices(Request $request)
+    public function orderPrices(Request $request, $order_id)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
-        $prices = Price::all();
+        $prices = Price::where('order_id', $order_id)->get();
         $res["success"] = true;
         if (count($prices) > 0){
             $res["data"] = $prices;
@@ -24,14 +24,13 @@ class PriceController extends Controller
         return response($res, $statusCode);
     }
 
-    public function ordersCreate(Request $request)
+    public function orderPricesCreate(Request $request, $order_id)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
         $this->validate($request, [
-            "name"=>"required",
-            "quantity"=>"required",
+            "type"=>"required",
             "price"=>"required"
         ], 
         [
@@ -39,9 +38,13 @@ class PriceController extends Controller
         ]);
 
         try {
-            $save = Order::create($request->all());
+            $save = Price::create([
+                "order_id"=>$order_id,
+                "type"=>$request->input("type"),
+                "price"=>$request->input("price")
+            ]);
             $res["success"]=true;
-            $res["message"]="Order successfully added.";
+            $res["message"]="Order price successfully added.";
             $res["data"]= $save;
         } catch (Exception $ex) {
             $statusCode=500;
@@ -51,27 +54,28 @@ class PriceController extends Controller
         return response($res, $statusCode);
     }
 
-    public function ordersUpdate(Request $request)
+    public function orderPricesUpdate(Request $request, $order_id, $price_id)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
-        $this->validate($request, [
-            "order_id"=>"required"
-        ], 
-        [
-            "required"=>"Please fill this field :attribute"
-        ]);
+        $data = ["order_id"=>$order_id];
+        if($request->input("type")){
+            $data["type"] = $request->input("type");
+        }
+        if($request->input("price")){
+            $data["price"] = $request->input("price");
+        }
 
         try {
-            $order = Order::find($request->input("order_id"));
-            if($order){
-                $order->update($request->all());
+            $price = Price::find($price_id);
+            if($price){
+                $price->update($data);
                 $res["success"]=true;
-                $res["message"]="Order successfully updated.";
-                $res["data"]= $order;
+                $res["message"]="Price successfully updated.";
+                $res["data"]= $price;
             } else {
-                $res["message"]="Could not find order.";
+                $res["message"]="Could not find price.";
                 $statusCode = 404;
             }
         } catch (Exception $ex) {
@@ -82,20 +86,13 @@ class PriceController extends Controller
         return response($res, $statusCode);
     }
 
-    public function ordersDelete(Request $request)
+    public function orderPricesDelete(Request $request, $order_id, $price_id)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
-        $this->validate($request, [
-            "order_id"=>"required"
-        ], 
-        [
-            "required"=>"Please fill this field :attribute"
-        ]);
-
         try {
-            $order = Order::find($request->input("order_id"));
+            $order = Price::find($price_id);
             if($order){
                 $order->delete();
                 $res["success"]=true;
