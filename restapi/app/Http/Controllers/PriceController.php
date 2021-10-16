@@ -3,19 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Order;
+use App\Models\Price;
 
-class OrderController extends Controller
+class PriceController extends Controller
 {
-    public function orders(Request $request)
+    public function prices(Request $request)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
-        $orders = Order::all();
+        $prices = Price::all();
         $res["success"] = true;
-        if (count($orders) > 0){
-            $res["data"] = $orders;
+        if (count($prices) > 0){
+            $res["data"] = $prices;
             $res["message"] = "Data retrieved!";
         } else {
             $res["message"] = "No Data to show!";
@@ -51,13 +51,20 @@ class OrderController extends Controller
         return response($res, $statusCode);
     }
 
-    public function ordersUpdate(Request $request, $order_id)
+    public function ordersUpdate(Request $request)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
+        $this->validate($request, [
+            "order_id"=>"required"
+        ], 
+        [
+            "required"=>"Please fill this field :attribute"
+        ]);
+
         try {
-            $order = Order::find($order_id);
+            $order = Order::find($request->input("order_id"));
             if($order){
                 $order->update($request->all());
                 $res["success"]=true;
@@ -75,13 +82,20 @@ class OrderController extends Controller
         return response($res, $statusCode);
     }
 
-    public function ordersDelete(Request $request, $order_id)
+    public function ordersDelete(Request $request)
     {
         $statusCode = 200;
         $res = ["success"=>false, "message"=>"", "data"=>null];
 
+        $this->validate($request, [
+            "order_id"=>"required"
+        ], 
+        [
+            "required"=>"Please fill this field :attribute"
+        ]);
+
         try {
-            $order = Order::find($order_id);
+            $order = Order::find($request->input("order_id"));
             if($order){
                 $order->delete();
                 $res["success"]=true;

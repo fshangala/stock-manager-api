@@ -16,7 +16,12 @@ $router->group(["prefix"=>"/api"], function($router){
     $router->group(["prefix"=>"/orders"],function($router){
         $router->get("", "OrderController@orders");
         $router->post("/add", "OrderController@ordersCreate");
-        $router->put("/update", "OrderController@ordersUpdate");
-        $router->delete("/delete", "OrderController@ordersDelete");
+        $router->group(["prefix"=>'/{order_id}'], function($router){
+            $router->put("/update", "OrderController@ordersUpdate");
+            $router->delete("/delete", "OrderController@ordersDelete");
+            $router->group(["prefix"=>'/prices'], function($router){
+                $router->get("", "PriceController@prices");
+            });
+        });
     });
 });
